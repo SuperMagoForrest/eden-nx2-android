@@ -35,7 +35,7 @@ jobs:
       run: |
         sudo apt-get update -qq
         sudo apt-get install -y glslang-tools ninja-build
-        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "cmake;4.1.0" || true
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "cmake;4.1.0" "ndk;28.2.13676358" || true
 
     - name: Make gradlew executable
       run: chmod +x src/android/gradlew
@@ -53,8 +53,9 @@ jobs:
       env:
         ANDROID_HOME: /usr/local/lib/android/sdk
         ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-        ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/27.0.12077973
-        ANDROID_NDK: /usr/local/lib/android/sdk/ndk/27.0.12077973
+        # Keep in sync with src/android/app/build.gradle.kts ndkVersion
+        ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/28.2.13676358
+        ANDROID_NDK: /usr/local/lib/android/sdk/ndk/28.2.13676358
         CMAKE_C_COMPILER_LAUNCHER: ccache
         CMAKE_CXX_COMPILER_LAUNCHER: ccache
         ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}

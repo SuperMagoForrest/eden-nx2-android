@@ -1,0 +1,18 @@
+---
+description: Eden SX2A non-negotiable guardrails and brain-first workflow
+alwaysApply: true
+---
+
+# Eden SX2A Guardrails
+
+- Before new work, read `brain/CHECKPOINT.md`, `brain/CURRENT_STATE.md`, `brain/NEXT_ACTIONS.md`.
+- Evidence labels only: VERIFIED | PARTIALLY_VERIFIED | IMPLEMENTED_NOT_TESTED | HYPOTHESIS | BLOCKED | NOT_STARTED.
+- Do not declare compatibility or performance wins without measurements.
+- Prefer subsystem fixes over per-title hacks; isolate temporary workarounds.
+- Never force-push; keep `baseline/59bb148` and tag `baseline-m0-59bb148` intact.
+- No PRs to upstream Eden/PokeDinner/JaviiDeveloper unless the owner explicitly asks.
+- No games, keys, firmware, secrets in git.
+- Do not disable thermal protections or use root/overclock to pass tests.
+- Android diagnostic package: `dev.eden.nx2.relWithDebInfo`.
+- Memory work must distinguish guest VA / DRAM layout / host RSS; 12GB layout intends 12GiB+8GiB DRAM (`k_system_control.*`).
+- Follow `brain/GUARDRAILS.md` and upstream `docs/policies/AI.md` / `AGENTS.md` for upstream-bound contributions.
