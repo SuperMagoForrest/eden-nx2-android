@@ -45,7 +45,10 @@ Implementazione: `src/core/hle/kernel/board/nintendo/nx/k_system_control.cpp`.
 Su **Android/POSIX** (`host_memory.cpp`):
 - `memfd_create` + `ftruncate(fd, backing_size)` + `mmap` SHARED dell'intero backing
 - Lo spazio virtuale guest usa `MAP_NORESERVE` (non committa RSS finché non toccato)
-- Il backing memfd da 20 GiB **non** è automaticamente 20 GiB RSS, ma ogni clear/touch pagina materializza memoria (`ClearBackingRegion` documenta che clearare forza pagine reali)
+- Il backing memfd da 20 GiB **non** è automaticamente 20 GiB RSS, ma ogni clear/touch pagina materializza memoria
+- `ClearBackingRegion` (`VERIFIED`): per fill 0 azzera **solo** granule `GranuleDirty`; commento esplicito che un clear completo del heap title 1 aveva forzato il commit di ogni pagina. `MarkUsed` marca comunque i granule come used.
+- Granule size: 64 KiB (`GranuleShift = 16`)
+- Opportunità M5: liberare RSS di granule unused (madvise DONTNEED / fallocate punch) sotto pressione senza cambiare GetInfo guest — da progettare e misurare.
 
 Su **Windows desktop**: `CreateFileMapping2(..., SEC_COMMIT, backing_size)` — rischio commit aggressivo (path non Thor).
 

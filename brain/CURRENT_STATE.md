@@ -4,35 +4,32 @@
 
 ## Git
 
-- Branch: `sx2a/dev` @ `59bb14838877260f820d4b0dcf63114ac4612310`
-- Working tree: clean + untracked `brain/` `.cursor/` (pending commit)
+- Branch: `sx2a/dev` @ `b68d3f5325e6dab81e345ad84acd039ee1cc93c5` (brain/skills; parent baseline `59bb148`)
+- Baseline protetta: `baseline/59bb148`, tag `baseline-m0-59bb148`
 - origin: SuperMagoForrest/eden-nx2-android
 - upstream: JaviiDeveloper/eden-nx2-android (nx2-android)
 
 ## Completato
 
 - Workspace `F:\DEV\EDEN_SX2A\`
-- Fork creato
-- Clone + remotes + baseline branch/tag
+- Fork + remotes + baseline
 - NDK 28.2 + CMake 3.31.5/3.31.6 + cmdline-tools
-- `local.properties`
-- Audit iniziale codice/docs (memory 20GiB intent, 6 cores, Android package, flow)
-- Project brain (documenti principali)
-- Build baseline avviata
+- Audit iniziale (memory 20GiB intent, HostMemory/NCE, 6 cores, Android package, flow)
+- Project brain (31 doc) + 14 skill + guardrail rule
+- Script Win build/ADB/Thor battery
+- CI NDK allineato a 28.2
+- Commit `b68d3f5` + push fork (se riuscito)
 
 ## In corso
 
-- `gradlew assembleMainlineRelWithDebInfo` → log `logs/baseline-build.log`
-- Subagent audit architettura / dipendenze
+- `gradlew assembleMainlineRelWithDebInfo` — CMake/CPM configure (cubeb e oltre); log `logs/baseline-build.log`
 
 ## Bloccato / serve utente
 
-- Collegare Thor Pro quando batteria test sarà pronta (non ora)
-- Giochi legittimi per compat (non ora)
+- Thor Pro + dump legittimi solo quando APK baseline pronto
 
 ## Non fatto
 
-- APK prodotto e verificato
-- Skill file completi (in scrittura)
-- Push su origin (dopo commit brain)
-- Runtime test
+- APK verificato
+- Runtime test Thor
+- Deep audit nx2_gsv / shader completeness
