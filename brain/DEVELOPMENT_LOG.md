@@ -9,3 +9,10 @@
 - Avviata build `assembleMainlineRelWithDebInfo`.
 - Audit: layout guest 12GB+8GB graphics; 6 CPU cores; package `dev.eden.nx2`; auto Switch2 layout; genealogia PokeDinner.
 - Creato `brain/` documentazione operativa.
+
+## 2026-11-27 — Baseline APK
+
+- Build #1 FAILED: glslangValidator missing.
+- Build #2 SUCCESS after toolchains/bin glslangValidator.
+- APK archived: releases/eden-sx2a-baseline-59bb148-relWithDebInfo.apk
+- SHA256 33E5B87594F12EA1C4118E76BB7A0A5C6D7BA8C48A918CB4681ECCBF7BE08325

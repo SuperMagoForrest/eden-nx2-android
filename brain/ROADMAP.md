@@ -4,9 +4,9 @@
 
 | ID | Nome | Ingresso | Uscita | Stato |
 |---|---|---|---|---|
-| M0 | Repo, ambiente, baseline | — | Fork, remotes, baseline tag, env, build avviata | **IN_PROGRESS** |
-| M1 | Audit, brain, skill, guardrail | M0 acquisizione | Brain completo, skill, backlog, report | **IN_PROGRESS** |
-| M2 | Build riproducibile + diagnostica | M0/M1 | APK baseline verificato, script Win/WSL, log pipeline | NEXT |
+| M0 | Repo, ambiente, baseline | — | Fork, remotes, baseline tag, env, APK | **DONE** |
+| M1 | Audit, brain, skill, guardrail | M0 acquisizione | Brain completo, skill, backlog, report | **DONE** |
+| M2 | Build riproducibile + diagnostica | M0/M1 | Script Win OK; CI NDK TBD; device diagnostics | **IN_PROGRESS** |
 | M3 | Stabilizzazione core | M2 | Crash P0 ridotti, lifecycle fix | PENDING |
 | M4 | Correttezza CPU/GPU + compat | M3 | Titoli seed a MENU/IN_GAME con evidenze | PENDING |
 | M5 | Ottimizzazione memoria strutturale | M3/M4 | Budget Thor Pro misurati; piano Base | PENDING |

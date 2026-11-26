@@ -1,11 +1,8 @@
-# Next actions (eseguibili)
+# Next actions
 
-1. **Monitorare / completare build baseline** — `F:\DEV\EDEN_SX2A\logs\baseline-build.log`.
-2. **Se successo:** archiviare APK in `F:\DEV\EDEN_SX2A\builds\baseline-59bb148\` + checksum.
-3. **Se fallimento:** fix toolchain (cmake 3.31.5 exact, licenze SDK, CPM network) e rilanciare.
-4. **Completare skill** in `.cursor/skills/` (14 specializzazioni) + rule alwaysApply.
-5. **Aggiungere remote `pokedinner`** quando serve sync (non urgente).
-6. **Porting `env.sh` Windows** in `tools/nx2/android/env.win.ps1` (nuovo file, non rompere bash).
-7. **Allineare CI NDK** a 28.2.13676358.
-8. **Deep-dive** `nx2_gsv.h` + memory commit paths (M5 prep) mentre si aspetta device.
-9. **Non chiedere Thor** finché APK baseline + script collect non sono pronti.
+1. **Commit/push** aggiornamenti brain post-APK (CHECKPOINT, PERFORMANCE_BASELINE, CURRENT_STATE).
+2. Quando Thor collegato:  
+   `powershell -File F:\DEV\EDEN_SX2A\repo\tools\nx2\android\thor_battery.ps1 -InstallApk -ApkPath F:\DEV\EDEN_SX2A\releases\eden-sx2a-baseline-59bb148-relWithDebInfo.apk`
+3. Deep-dive M5: percorsi `MarkUsed`/`ClearBackingRegion` + sparse GPU 214 sotto pressione 8 GB.
+4. Valutare profilo hardware adattivo (design ADR) senza cambiare GetInfo guest alla cieca.
+5. CI: verificare che runner abbia NDK 28.2 dopo workflow update.
