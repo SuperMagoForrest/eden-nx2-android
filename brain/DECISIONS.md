@@ -35,3 +35,8 @@
 
 - **Decisione:** push solo sul fork; no PR a Eden/PokeDinner/Javii senza OK esplicito
 - **Stato:** Accepted
+
+## ADR-008 — Policy pubblicazione fork pubblico
+
+- **Decisione:** documentare e applicare `STORAGE_POLICY`, `STORAGE_AUDIT`, `ENVIRONMENT_ISOLATION`, `GIT_WORKFLOW`; artefatti/APK/log fuori git; push solo `origin`/`sx2a/*`
+- **Stato:** Accepted

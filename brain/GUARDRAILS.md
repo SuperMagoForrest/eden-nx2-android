@@ -14,14 +14,15 @@
 - Ogni ottimizzazione: confronto baseline.
 - Proteggere save/config utente; package diagnostico separato (`relWithDebInfo`).
 
-## Git
+## Git (fork pubblico)
 
-- Branch `nx2-android` / tag baseline intatti.
-- Lavoro su `sx2a/dev` (o topic branch).
+- **Push esclusivamente** su `origin` (fork SuperMagoForrest) e branch `sx2a/*`.
+- **Mai** push verso `upstream` / repository originale.
+- **Mai** creare PR verso upstream salvo richiesta esplicita del proprietario.
+- Branch `nx2-android` / `baseline/59bb148` / tag baseline **intatti**.
 - No force push.
-- No commit di secrets, giochi, firmware, APK binari grossi nel git se evitabile (artifacts in `F:\DEV\EDEN_SX2A\builds|releases`).
-- No PR verso upstream senza richiesta esplicita del proprietario.
-- Rispettare `docs/policies/AI.md` per contribuzioni che dovessero andare upstream.
+- No commit di secrets, giochi, firmware, log sensibili, PII, `local.properties`, APK (vedi `STORAGE_POLICY.md`, `GIT_WORKFLOW.md`).
+- Rispettare `docs/policies/AI.md` se un giorno il proprietario autorizzasse contribuzioni upstream.
 
 ## Evidenze
 

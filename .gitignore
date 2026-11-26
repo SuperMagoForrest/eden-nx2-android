@@ -67,3 +67,15 @@ vulkansdk*.exe
 
 # Build-time generated external sources
 externals/generated
+
+# Eden SX2A local / sensitive (public fork — do not publish)
+src/android/local.properties
+src/android/**/local.properties
+*.apk
+*.aab
+nx2-runs/
+*.jks
+*.keystore
+!src/android/app/debug.keystore
+.env
+.env.*

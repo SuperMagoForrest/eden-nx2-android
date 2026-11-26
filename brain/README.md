@@ -44,6 +44,10 @@ Memoria persistente del fork di sviluppo **SuperMagoForrest/eden-nx2-android** (
 | [CHECKPOINT.md](CHECKPOINT.md) | Checkpoint riprendibile |
 | [NEXT_ACTIONS.md](NEXT_ACTIONS.md) | Prossime azioni |
 | [DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md) | Log sviluppo |
+| [GIT_WORKFLOW.md](GIT_WORKFLOW.md) | Remotes, branch, divieti push/PR upstream |
+| [STORAGE_POLICY.md](STORAGE_POLICY.md) | Cosa non pubblicare sul fork pubblico |
+| [STORAGE_AUDIT.md](STORAGE_AUDIT.md) | Audit conformità storage |
+| [ENVIRONMENT_ISOLATION.md](ENVIRONMENT_ISOLATION.md) | Isolamento workspace / artefatti / device |
 
 ## Workspace
 
