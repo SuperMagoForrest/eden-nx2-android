@@ -65,8 +65,19 @@ Implicazione M5: ridurre RSS = evitare touch/clear inutili, sparse GPU, eviction
 - Dynarmic per-block vectors / fiber stacks non inizializzati (nota `NX2_ANDROID.md`)
 - Android: `BugReport.kt` + `ApplicationExitInfo.REASON_LOW_MEMORY`, readiness check
 
+## Call site `ClearBackingRegion` (inventario M5)
+
+| File | Ruolo |
+|---|---|
+| `k_page_table_base.cpp` | Clear heap pages on map/unmap paths |
+| `k_memory_manager.cpp` | Pool allocate/free clears + `ForgetContents` on init |
+| `k_shared_memory.cpp` | Shared memory init clear |
+| `nx2_gsv.h` | Graphics-server related backing clear |
+
+Prossimo passo implementativo (dopo misura Thor): valutare `madvise(MADV_DONTNEED)` / `fallocate` punch su granule unused liberati, dietro flag diagnostico, confrontando RSS vs baseline APK.
+
 ## Metriche da raccogliere (non ancora acquisite)
 
 RSS, PSS, anon, GPU, JIT cache, shader/pipeline cache, peak, LMKD kills — su Thor Pro con dumpsys/heapprofd (`tools/nx2/android/heapprofd*`).
 
-Stato misurazioni: `NOT_STARTED`.
+Stato misurazioni: `NOT_STARTED`. Device ADB al checkpoint: nessun device collegato.
