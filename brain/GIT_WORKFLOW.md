@@ -18,7 +18,7 @@
 | `upstream` | `https://github.com/JaviiDeveloper/eden-nx2-android.git` | **solo `fetch`** (lettura / sync analisi) |
 | `pokedinner` (opzionale) | git.eden-emu.dev … | solo fetch/merge locale quando serve; no push |
 
-Non aggiungere `push` URL verso upstream. Non usare `git push upstream`.
+Protezione locale applicata: `git remote set-url --push upstream DISABLED` (un `git push upstream` fallisce). Non ripristinare il push URL. Non usare `git push upstream`.
 
 ## Branch protetti (baseline)
 
