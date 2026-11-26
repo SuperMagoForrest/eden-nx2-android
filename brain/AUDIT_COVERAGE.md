@@ -24,7 +24,11 @@ Legenda: **Deep** | **Interface** | **Tested** | **Todo** | **N/A**
 | Runtime Thor Pro | Todo | device non ancora in sessione build |
 | Thor Base fisico | Todo | |
 | Performance counters | Todo | |
-| Externals version audit | Interface | agent in corso |
-| CI workflows | Interface | NDK drift noted |
+| Externals / CPM version audit | Interface→Deep (inventario) | Completato in-process dopo fail subagent; vedi DEPENDENCIES.md |
+| CI workflows | Interface | NDK allineato a 28.2 nel fork |
+
+## Nota subagent
+
+I subagent explore di audit architettura/dipendenze sono terminati in **error** (Other Models usage limit). Copertura recuperata dall’agente principale senza rilancio. Non ripetere quegli audit finché il brain resta allineato al commit corrente.
 
 Aggiornare dopo ogni deep-dive; non dichiarare audit “completo” finché le aree Todo critiche restano aperte.
