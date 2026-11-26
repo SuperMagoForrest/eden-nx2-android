@@ -23,7 +23,7 @@
 | Gradle wrapper | 8.13 | `PARTIALLY_VERIFIED` (download in corso nella build baseline) |
 | platform-tools / adb | presente | `VERIFIED` |
 | WSL | `ThorLinux` (WSL2) con cmake/ninja/clang++ | `VERIFIED` |
-| glslang | da verificare su Windows | `NOT_STARTED` |
+| glslangValidator | `F:\DEV\EDEN_SX2A\toolchains\bin` (copia da SDK emulator) + WSL `/usr/bin/glslangValidator` | `VERIFIED` |
 
 ## Flavor target di riferimento
 

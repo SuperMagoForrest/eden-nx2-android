@@ -8,7 +8,11 @@ $env:ANDROID_HOME = $Sdk
 $env:ANDROID_SDK_ROOT = $Sdk
 $env:ANDROID_NDK_HOME = $Ndk
 $env:JAVA_HOME = $Java
-$env:Path = "$Java\bin;$Sdk\cmake\3.31.5\bin;$Sdk\platform-tools;$env:Path"
+$ToolchainBin = "F:\DEV\EDEN_SX2A\toolchains\bin"
+$env:Path = "$ToolchainBin;$Java\bin;$Sdk\cmake\3.31.5\bin;$Sdk\platform-tools;$env:Path"
+if (-not (Get-Command glslangValidator -ErrorAction SilentlyContinue)) {
+  throw "glslangValidator not on PATH. Place it in $ToolchainBin (see brain/BUILD_AND_SETUP.md)."
+}
 $LogDir = "F:\DEV\EDEN_SX2A\logs"
 New-Item -ItemType Directory -Force -Path $LogDir, "F:\DEV\EDEN_SX2A\builds" | Out-Null
 $Log = Join-Path $LogDir ("build-" + (Get-Date -Format "yyyyMMdd-HHmmss") + ".log")

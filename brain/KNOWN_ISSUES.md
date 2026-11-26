@@ -16,7 +16,8 @@ Stato evidenza: se non misurato su Thor in questa sessione → da README/NX2_NOT
 | KI-009 | P2 | Riavvio app obbligatorio tra giochi | Android lifecycle | Tutti | State leak sospetto | Open |
 | KI-010 | P1 | Task/mesh shaders mancanti | Shader | Alcuni titoli | No VK mesh path | Open |
 | KI-011 | P2 | CI NDK mismatch (27 vs 28.2) | Build | — | Workflow vs gradle | Open |
-| KI-012 | P3 | Script `tools/nx2/android/*` hardcodati macOS paths | Build/QA | — | `$HOME/Library/Android/sdk` | Open |
+| KI-012 | P3 | Script `tools/nx2/android/*` hardcodati macOS paths | Build/QA | — | `$HOME/Library/Android/sdk` | Mitigato (script `.ps1` Win) |
+| KI-013 | P1 | Build Win: `glslangValidator` assente nel PATH | Build | — | host_shaders CMake FATAL | Mitigato (toolchains/bin) |
 
 ## Upstream compatibility table (README, telefono 16 GB SM8850)
 
