@@ -209,3 +209,25 @@ TEST_CASE("HostMemory: Partial sparse middle unmap and check bindings", "[common
     REQUIRE(ptr[0x0000] == 19);
     REQUIRE(ptr[0x3fff] == 12);
 }
+
+TEST_CASE("HostMemory: ReleaseBackingRegion clears full granules", "[common]") {
+    HostMemory mem(1_MiB, 2_MiB);
+    REQUIRE(mem.BackingBasePointer() != nullptr);
+    // Granule size is 64 KiB: write then release an aligned span.
+    constexpr size_t offset = 64_KiB;
+    constexpr size_t length = 128_KiB;
+    std::memset(mem.BackingBasePointer() + offset, 0xAB, length);
+    mem.MarkUsed(offset, length);
+    mem.MarkDirty(offset, length);
+    mem.ReleaseBackingRegion(offset, length);
+#if !defined(_WIN32)
+    // After punch/DONTNEED, pages should read as zero on Linux/Android.
+    REQUIRE(mem.BackingBasePointer()[offset] == 0);
+    REQUIRE(mem.BackingBasePointer()[offset + length - 1] == 0);
+#endif
+    // Zero clear must not recommit if granules were marked clean unused.
+    mem.ClearBackingRegion(offset, length, 0);
+#if !defined(_WIN32)
+    REQUIRE(mem.BackingBasePointer()[offset] == 0);
+#endif
+}

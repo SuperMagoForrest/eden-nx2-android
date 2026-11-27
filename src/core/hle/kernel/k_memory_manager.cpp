@@ -9,6 +9,7 @@
 #include "common/alignment.h"
 #include "common/assert.h"
 #include "common/scope_exit.h"
+#include "common/settings.h"
 #include "core/core.h"
 #include "core/device_memory.h"
 #include "core/hle/kernel/initial_process.h"
@@ -257,6 +258,18 @@ void KMemoryManager::MarkUsed(KPhysicalAddress address, size_t num_pages) {
 void KMemoryManager::MarkDirty(KPhysicalAddress address, size_t num_pages) {
     m_system.DeviceMemory().buffer.MarkDirty(GetInteger(address) - Core::DramMemoryMap::Base,
                                              num_pages * PageSize);
+}
+
+void KMemoryManager::OnPagesClosed(KPhysicalAddress address, size_t num_pages) {
+    // SX2A: release_host_backing drops memfd/anonymous RSS for fully freed granules so Thor
+    // does not keep pages resident until the next ClearBackingRegion touch.
+    if (Settings::values.release_host_backing.GetValue()) {
+        m_system.DeviceMemory().buffer.ReleaseBackingRegion(
+            GetInteger(address) - Core::DramMemoryMap::Base, num_pages * PageSize);
+    } else {
+        // Legacy: pages may hold data; the next allocation clears them.
+        this->MarkDirty(address, num_pages);
+    }
 }
 
 Result KMemoryManager::AllocatePageGroupImpl(KPageGroup* out, size_t num_pages, Pool pool,

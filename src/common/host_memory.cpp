@@ -25,6 +25,9 @@
 
 #if defined(__linux__)
 #include <sys/random.h>
+#if defined(__ANDROID__) || defined(__linux__)
+#include <linux/falloc.h>
+#endif
 #elif defined(__APPLE__)
 #include <sys/types.h>
 #include <sys/random.h>
@@ -235,6 +238,15 @@ public:
     void EnableDirectMappedAddress() {
         // TODO
         UNREACHABLE();
+    }
+
+    /// Best-effort discard of committed pages (Thor path is Android/POSIX).
+    void ReleaseBacking(size_t offset, size_t length) {
+        if (!backing_base || length == 0) {
+            return;
+        }
+        // MEM_RESET hints the pages can be discarded without decommitting the VA.
+        VirtualAlloc(backing_base + offset, length, MEM_RESET, PAGE_READWRITE);
     }
 
     const size_t backing_size; ///< Size of the backing memory in bytes
@@ -652,6 +664,37 @@ public:
         virtual_base = nullptr;
     }
 
+    /// Drop host pages for [offset, offset+length) in the backing mapping.
+    /// Prefer memfd hole-punch; fall back to MADV_DONTNEED. Length must be page-aligned.
+    void ReleaseBacking(size_t offset, size_t length) {
+        if (length == 0 || backing_base == MAP_FAILED) {
+            return;
+        }
+        if (offset >= backing_size) {
+            return;
+        }
+        length = std::min(length, backing_size - offset);
+#if defined(__linux__)
+        bool punched = false;
+        if (fd >= 0) {
+#ifdef FALLOC_FL_PUNCH_HOLE
+            // Keep file size; free physical pages for untouched granules after free.
+            if (fallocate(fd, FALLOC_FL_PUNCH_HOLE | FALLOC_FL_KEEP_SIZE,
+                          static_cast<off_t>(offset), static_cast<off_t>(length)) == 0) {
+                punched = true;
+            }
+#endif
+        }
+        if (!punched) {
+            // Shared memfd mappings: DONTNEED may refill from the file. Still useful for
+            // anonymous fallback and as a secondary hint after punch.
+            madvise(backing_base + offset, length, MADV_DONTNEED);
+        }
+#else
+        madvise(backing_base + offset, length, MADV_DONTNEED);
+#endif
+    }
+
     const size_t backing_size; ///< Size of the backing memory in bytes
     const size_t virtual_size; ///< Size of the virtual address placeholder in bytes
 
@@ -849,6 +892,42 @@ void HostMemory::ForgetContents() {
         if ((granules[index].load(std::memory_order_relaxed) & GranuleUsed) != 0) {
             granules[index].fetch_or(GranuleDirty, std::memory_order_release);
         }
+    }
+}
+
+void HostMemory::ReleaseBackingRegion(size_t physical_offset, size_t length) {
+    if (length == 0 || !backing_base) {
+        return;
+    }
+    const size_t end = physical_offset + length;
+    // Only release fully covered granules so partial frees cannot discard live neighbor data.
+    size_t release_begin = Common::AlignUp(physical_offset, size_t{1} << GranuleShift);
+    size_t release_end = Common::AlignDown(end, size_t{1} << GranuleShift);
+    if (release_begin >= release_end) {
+        // Partial granule: keep resident, but mark dirty so the next clear zeros remaining data.
+        MarkDirty(physical_offset, length);
+        return;
+    }
+    if (physical_offset < release_begin) {
+        MarkDirty(physical_offset, release_begin - physical_offset);
+    }
+    if (release_end < end) {
+        MarkDirty(release_end, end - release_end);
+    }
+#if !(defined(__OPENORBIS__) || defined(__managarm__))
+    if (impl) {
+        impl->ReleaseBacking(release_begin, release_end - release_begin);
+    } else
+#endif
+    {
+#if !defined(_WIN32)
+        madvise(backing_base + release_begin, release_end - release_begin, MADV_DONTNEED);
+#endif
+    }
+    for (size_t index = release_begin >> GranuleShift; index < (release_end >> GranuleShift);
+         ++index) {
+        // Punched/DONTNEED pages read as zero: clear used+dirty so zero fills skip recommit.
+        granules[index].store(0, std::memory_order_release);
     }
 }
 

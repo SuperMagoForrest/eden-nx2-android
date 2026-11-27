@@ -66,6 +66,11 @@ public:
     /// A new kernel on this memory: everything a previous one used may hold data.
     void ForgetContents();
 
+    /// Releases host physical backing for granules no longer owned by the guest kernel.
+    /// On Linux/Android prefers fallocate(PUNCH_HOLE) on the memfd, else MADV_DONTNEED.
+    /// Fully covered granules are marked unused+clean so a later zero ClearBackingRegion skips them.
+    void ReleaseBackingRegion(size_t physical_offset, size_t length);
+
     [[nodiscard]] u8* BackingBasePointer() noexcept {
         return backing_base;
     }
