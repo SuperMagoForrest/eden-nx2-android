@@ -1,22 +1,30 @@
-# Checkpoint
+# Checkpoint — Alpha 0.2 candidate
 
-## Ripresa immediata
+**Aggiornato:** 2026-11-27
 
-1. **APK installata (corrente):** `F:\DEV\EDEN_SX2A\releases\eden-sx2a-thor-opt-alpha01c-relWithDebInfo.apk`
-2. **SHA256:** `915F67643D63CB33255FE8525888E6A24283D56B824C064C9EBF755802542D10`
-3. **Commit:** `ebfc635a22` su `origin/sx2a/dev`
-4. **Rollback baseline:** `eden-sx2a-baseline-59bb148-relWithDebInfo.apk` / `33E5B875…08325`
-5. **Prossimo comando utile:** dopo aver avviato Pokopia sulla candidate:
-   `powershell -File F:\DEV\EDEN_SX2A\repo\tools\nx2\android\thor_diagnostics.ps1 -DurationSec 300 -IntervalSec 5`
-6. Report: `F:\DEV\EDEN_SX2A\reports\M2_M11_INTERIM_REPORT.md`
+## Git
 
-## Snapshot
+- Branch: `sx2a/dev`
+- HEAD: `efd4e3447a` — Fix Alpha 0.1c LMKD regression with safe reclaim and single pacing
+- Baseline: `59bb148`
 
-| Campo | Valore |
-|---|---|
-| Data | 2026-11-27 |
-| Branch | `sx2a/dev` @ `ebfc635a22` |
-| Baseline emu | `59bb148` |
-| Candidate | Alpha 0.1c installata VERIFIED |
-| Smoke UI | MainActivity OK, idle PSS ~85 MB |
-| Pokopia candidate | NEEDS_OWNER / strumentazione |
+## APK
+
+- Path: `F:\DEV\EDEN_SX2A\releases\eden-sx2a-thor-opt-alpha02-relWithDebInfo.apk`
+- SHA256: `DDD9C30C577C475F1D3FA8BF74F612CD44642D3E868B73F0DEE2C6631D78E48D`
+- versionName: `nx2-android-v0.3.3-16-relWithDebInfo`
+- versionCode: `34417628`
+- Installato su Thor Pro: SHA device match
+
+## Stato validazione
+
+- Root cause 0.1c: **VERIFIED** LMKD LOW_MEMORY
+- Fix strutturali: **IMPLEMENTED + BUILT + INSTALLED**
+- Pokopia boot/gameplay Alpha 0.2: **PENDING_OWNER_RUN** (avviare titolo, USB collegato)
+
+## Config dispositivo consigliata
+
+- Frame pacing: 30 FPS
+- Release host backing: ON (reclaim corretto)
+- Standard Performance / fan Smart
+- Non usare `pm clear`
