@@ -1,31 +1,29 @@
-# Root cause analysis
+# Root cause analysis — Thor Pro / Pokopia samples
 
-Solo cause con evidenza codice/documentazione. Ipotesi etichettate.
+## Sintomi OWNER_REPORTED
 
-## RCA-001 — Pressione memoria su device ≤12 GB host
+Lag, micro-stutter, scatti, temp 57→74 °C in ~3 min, RAM sistema ~8–10 GB, FPS overlay 38–55, shader compile bursts (41+4).
 
-- **Sintomo:** LMKD / app kill / readiness fail; upstream chiede 16 GB ideali.
-- **Meccanismo (`VERIFIED`):** Switch 2 forza layout 12 GB; `GetIntendedMemorySize` ritorna `12_GiB + 8_GiB` per graphics server pool. Titoli dimensionano heap da GetInfo total memory.
-- **Perché host soffre (`HYPOTHESIS`):** anche con lazy mapping, picchi (shader cache, texture, JIT, sparse backing touch) avvicinano LMKD su 8–12 GB.
-- **Direzione fix:** sparse/lazy commit, eviction, budget adattivi, non mentire sul total memory guest senza studio per-titolo.
+## Cause strutturali (codice, VERIFIED)
 
-## RCA-002 — First frame lento
+| ID | Causa | Evidenza | Mitigazione SX2A |
+|---|---|---|---|
+| RC-1 | Frame pacing disabilitato su Android API≥30 | `vk_swapchain.cpp` Wait(…,0) | Ripristinato + default 30 |
+| RC-2 | Pace NX2 legato solo a use_speed_limit | `nx2_gsv.h` PaceToVblank | Cap FPS indipendente |
+| RC-3 | Close guest → MarkDirty → Clear tocca pagine | `k_memory_manager` + host_memory | ReleaseBackingRegion |
+| RC-4 | Layout guest 12+8 GiB potenziale | MEMORY_ARCHITECTURE | Lazy + reclaim; no GetInfo lie |
+| RC-5 | Shader compile sync durante scene | OWNER + overlay shader count | Da ottimizzare (M5) |
 
-- **Sintomo:** minuti di black screen al primo avvio.
-- **Meccanismo (`PARTIALLY_VERIFIED` docs):** compilazione shader massiva + cold pipeline cache; present wait fino a 4 s per fence durante compile (NX2_NOTES).
-- **Direzione:** cache persistente, parallelismo controllato, prewarm, non saltare sync.
+## Ipotesi (da misurare su candidate)
 
-## RCA-003 — Texture nere MK World
+| ID | Ipotesi | Come verificare |
+|---|---|---|
+| H-1 | Cap 30 FPS riduce temp/power a parità scena | diag + battery temp + PSS |
+| H-2 | Reclaim riduce PSS dopo free guest | meminfo samples warm |
+| H-3 | Stutter correlato a pipeline compile | logcat shader + frametime |
 
-- **Sintomo:** in-game con texture nere.
-- **Causa:** `NOT_STARTED` (da isolare: format view, ASTC GOB, unbound RT, sparse unbacked).
+## Non cause automatiche
 
-## RCA-004 — FPS bassi DK Bananza
-
-- **Sintomo:** ~10 FPS su telefono 16 GB test upstream.
-- **Ipotesi multiple:** shader cost, upscaler stand-in DLSS, CPU sync, driver. Serve profiling Thor.
-
-## RCA-005 — CI non riproduce NDK locale
-
-- Workflow `build-release.yml` NDK 27 vs gradle `28.2.13676358`.
-- Rischio: “verde in CI, rotto in locale” o viceversa.
+- Tutta la RAM overlay ≠ PSS emulatore
+- Temp overlay ≠ solo GPU
+- FPS Thor ≠ frame guest autenticati

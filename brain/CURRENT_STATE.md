@@ -1,28 +1,34 @@
 # Current state
 
-**Aggiornato:** 2026-11-26 fine sessione M0/M1 + build baseline
+**Aggiornato:** 2026-11-27 sessione M2–M9 implementativa (in corso)
 
 ## Git
 
-- Branch: `sx2a/dev` (origin tracking)
-- Baseline codice: `59bb148`
-- Tooling commits su fork: brain/skills/CI/scripts
+- Branch: `sx2a/dev`
+- Baseline emu protetta: `59bb148`
+- Working tree: modifiche frame pacing + memory reclaim + Android Thor profile/thermal (pre-commit fino a build OK)
 
-## Completato (M0/M1)
+## Device
 
-- Workspace, fork, remotes, baseline protetta
-- NDK 28.2, CMake 3.31.5, glslangValidator toolchains
-- Brain 31 doc + 14 skill + guardrail
-- **APK baseline RelWithDebInfo prodotto e archiviato** (`VERIFIED` build)
-- Report `F:\DEV\EDEN_SX2A\reports\M0_M1_REPORT.md`
+- Thor Pro ADB: **ONLINE** (AYN Thor / kalama / Android 13 SDK 33)
+- APK installato = baseline SHA256 **match** `33E5B875…7BE08325`
+- Pokopia: **OWNER_REPORTED_IN_GAME** (lag/stutter/heat; non strumentato)
 
-## Prossimo (M2+)
+## Completato questa sessione
 
-1. Opzionale: installare APK su Thor con `thor_battery.ps1 -InstallApk`
-2. Allineare/deep-dive memoria (20 GiB intent vs RSS)
-3. Fix strutturali P0 dopo evidenze device
-4. Non dichiarare compat finché non testato
+- Diagnostica `thor_diagnostics.ps1` + snapshot `logs/diag-*`
+- Frame pacing Android ripristinato; default 30 FPS; PaceToVblank rispetta cap
+- `ReleaseBackingRegion` + `release_host_backing` su Close
+- Profili Thor + ThermalController (workers)
+- Storage build → `F:\DEV\EDEN_SX2A\cache\gradle|cpm|tmp`
 
-## Serve utente
+## In corso
 
-Collegare Thor Pro + dump legittimi quando pronto per batteria consolidata.
+- Build candidate RelWithDebInfo (`logs/build-20261127-112435.log`)
+
+## Prossimo
+
+1. Completare build, archiviare APK in `releases/` con SHA256
+2. Install diagnostico + campione meminfo a caldo (watchdog 70 °C)
+3. Shader stutter (async/cache) dopo explore
+4. Commit atomici + push origin

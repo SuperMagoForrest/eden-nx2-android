@@ -23,7 +23,7 @@ Stato evidenza: se non misurato su Thor in questa sessione → da README/NX2_NOT
 
 | Titolo | Stato upstream | Nostro stato Thor |
 |---|---|---|
-| Pokémon Pokopia (upd 327680) | PLAYABLE 20-30 FPS | `NOT_TESTED` |
+| Pokémon Pokopia (upd 327680) | PLAYABLE 20-30 FPS | `OWNER_REPORTED_IN_GAME` (lag/heat; non strumentato) |
 | Donkey Kong Bananza (upd 458752) | IN_GAME lento ~10 FPS | `NOT_TESTED` |
 | Mario Kart World 1.0.0 | IN_GAME black textures | `NOT_TESTED` |
 | Welcome Tour | Non testato | `NOT_TESTED` |

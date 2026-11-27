@@ -1,8 +1,7 @@
 # Next actions
 
-1. **Commit/push** aggiornamenti brain post-APK (CHECKPOINT, PERFORMANCE_BASELINE, CURRENT_STATE).
-2. Quando Thor collegato:  
-   `powershell -File F:\DEV\EDEN_SX2A\repo\tools\nx2\android\thor_battery.ps1 -InstallApk -ApkPath F:\DEV\EDEN_SX2A\releases\eden-sx2a-baseline-59bb148-relWithDebInfo.apk`
-3. Deep-dive M5: percorsi `MarkUsed`/`ClearBackingRegion` + sparse GPU 214 sotto pressione 8 GB.
-4. Valutare profilo hardware adattivo (design ADR) senza cambiare GetInfo guest alla cieca.
-5. CI: verificare che runner abbia NDK 28.2 dopo workflow update.
+1. **Owner/agent**: avviare Pokopia sulla candidate; far girare `thor_diagnostics.ps1 -DurationSec 300 -IntervalSec 5` senza `pm clear` / senza overwrite save.
+2. Confrontare PSS/temp/overlay FPS vs campioni owner baseline (stessa scena se possibile).
+3. M5 shader: dedupe/async/pipeline cache versioning (explore già avviato).
+4. Push commit Alpha 0.1 su `origin/sx2a/dev` se non già fatto.
+5. Non dichiarare G4–G6 VERIFIED finché non ci sono sample strumentati.

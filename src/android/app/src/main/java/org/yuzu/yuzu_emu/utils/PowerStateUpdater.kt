@@ -26,6 +26,7 @@ object PowerStateUpdater {
         runnable = Runnable {
             val info = PowerStateUtils.getBatteryInfo(context)
             NativeLibrary.updatePowerState(info[0], info[1] == 1, info[2] == 1)
+            ThermalController.poll(context)
             handler.postDelayed(runnable, UPDATE_INTERVAL_MS)
         }
         handler.post(runnable)

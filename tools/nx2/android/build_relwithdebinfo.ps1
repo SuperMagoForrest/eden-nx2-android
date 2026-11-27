@@ -1,4 +1,5 @@
 ﻿# Eden SX2A Windows build helper (RelWithDebInfo mainline)
+# Storage isolation: keep Gradle/CPM/temp caches on F: (not C:).
 $ErrorActionPreference = "Stop"
 $Repo = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
 $Sdk = if ($env:ANDROID_HOME) { $env:ANDROID_HOME } else { "$env:LOCALAPPDATA\Android\Sdk" }
@@ -8,8 +9,18 @@ $env:ANDROID_HOME = $Sdk
 $env:ANDROID_SDK_ROOT = $Sdk
 $env:ANDROID_NDK_HOME = $Ndk
 $env:JAVA_HOME = $Java
+# Force project caches onto F:\DEV\EDEN_SX2A
+$CacheRoot = "F:\DEV\EDEN_SX2A\cache"
+New-Item -ItemType Directory -Force -Path "$CacheRoot\gradle","$CacheRoot\cpm","$CacheRoot\tmp" | Out-Null
+$env:GRADLE_USER_HOME = "$CacheRoot\gradle"
+$env:CPM_SOURCE_CACHE = "$CacheRoot\cpm"
+$env:TEMP = "$CacheRoot\tmp"
+$env:TMP = "$CacheRoot\tmp"
 $ToolchainBin = "F:\DEV\EDEN_SX2A\toolchains\bin"
 $env:Path = "$ToolchainBin;$Java\bin;$Sdk\cmake\3.31.5\bin;$Sdk\platform-tools;$env:Path"
+Write-Host "GRADLE_USER_HOME=$env:GRADLE_USER_HOME"
+Write-Host "CPM_SOURCE_CACHE=$env:CPM_SOURCE_CACHE"
+Get-PSDrive C,F | ForEach-Object { Write-Host ("Drive {0}: free {1:N2} GB" -f $_.Name, ($_.Free/1GB)) }
 if (-not (Get-Command glslangValidator -ErrorAction SilentlyContinue)) {
   throw "glslangValidator not on PATH. Place it in $ToolchainBin (see brain/BUILD_AND_SETUP.md)."
 }

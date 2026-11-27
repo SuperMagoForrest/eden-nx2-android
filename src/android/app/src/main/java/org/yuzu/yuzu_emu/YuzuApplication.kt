@@ -24,6 +24,7 @@ import org.yuzu.yuzu_emu.utils.DocumentsTree
 import org.yuzu.yuzu_emu.utils.GpuDriverHelper
 import org.yuzu.yuzu_emu.utils.Log
 import org.yuzu.yuzu_emu.utils.PowerStateUpdater
+import org.yuzu.yuzu_emu.utils.ThorHardwareProfile
 import org.yuzu.yuzu_emu.utils.ControllerNavigationGlobalHook
 import java.util.Locale
 
@@ -72,6 +73,8 @@ class YuzuApplication : Application() {
         GpuDriverHelper.installBundledDriver()
         NativeInput.reloadInputDevices()
         NativeLibrary.logDeviceInfo()
+        // SX2A: apply Thor Base/Pro defaults once (30 FPS pacing, backing reclaim, workers).
+        ThorHardwareProfile.applyDefaultsOnce(this)
         PowerStateUpdater.start()
         Log.logDeviceInfo()
         ControllerNavigationGlobalHook.install(this)
