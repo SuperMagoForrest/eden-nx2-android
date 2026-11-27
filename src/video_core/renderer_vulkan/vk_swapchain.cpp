@@ -176,8 +176,15 @@ bool Swapchain::AcquireNextImage(bool may_flush) {
     }
 
     // SX2A: honor frame_pacing_mode on all platforms, including Android API 30+.
-    // The previous Android path forced target_fps=0 and ignored the setting entirely.
-    scheduler.Wait(resource_ticks[image_index], Settings::FramePacingTargetFps(), may_flush);
+    // Defer the host FPS cap for the first presents so present-gated loaders are not stretched
+    // across a long high-RSS window (Alpha 0.1c/0.2 LMKD during Pokopia load).
+    double target_fps = Settings::FramePacingTargetFps();
+    constexpr u64 kBootPresentGrace = 900; // ~15s at 60 present/s, ~30s at 30
+    if (target_fps > 0.0 && present_count < kBootPresentGrace) {
+        target_fps = 0.0;
+    }
+    ++present_count;
+    scheduler.Wait(resource_ticks[image_index], target_fps, may_flush);
 
     resource_ticks[image_index] = scheduler.CurrentTick();
 

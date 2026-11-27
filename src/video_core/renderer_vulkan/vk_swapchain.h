@@ -148,6 +148,9 @@ private:
 
     bool is_outdated{};
     bool is_suboptimal{};
+
+    /// Host present counter for boot-time FPS-cap grace (reset when Swapchain is created).
+    u64 present_count{};
 };
 
 } // namespace Vulkan

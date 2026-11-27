@@ -1,7 +1,8 @@
 # Next actions
 
-1. **Owner/agent**: avviare Pokopia sulla candidate; far girare `thor_diagnostics.ps1 -DurationSec 300 -IntervalSec 5` senza `pm clear` / senza overwrite save.
-2. Confrontare PSS/temp/overlay FPS vs campioni owner baseline (stessa scena se possibile).
-3. M5 shader: dedupe/async/pipeline cache versioning (explore già avviato).
-4. Push commit Alpha 0.1 su `origin/sx2a/dev` se non già fatto.
-5. Non dichiarare G4–G6 VERIFIED finché non ci sono sample strumentati.
+1. **Owner:** avviare Pokopia su Alpha 0.2 (già installata). USB collegato.  
+2. Confermare Frame pacing = 30 FPS.  
+3. Agent: classificare esito da `logs/diag-*` + ApplicationExitInfo (no LMKD).  
+4. Se boot OK → sessioni 5/15 min + frametime.  
+5. Se ancora LMKD → isolare reclaim off via setting e retest (feature flag già presente).  
+6. Solo dopo G4: release notes Alpha 0.2 stable + push tag candidato.

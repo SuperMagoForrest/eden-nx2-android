@@ -31,9 +31,12 @@ inline MemoryPressureLevel GetMemoryPressureLevel() {
         MemoryPressureState().load(std::memory_order_relaxed));
 }
 
-/// True only for Low/Critical. Moderate (UI_HIDDEN / RUNNING_MODERATE) must not trigger
-/// aggressive buffer GC during load — that path thrashed caches and worsened LMKD risk.
+/// True for Moderate+. Callers should scale aggressiveness by GetMemoryPressureLevel().
 inline bool MemoryPressureElevated() {
+    return GetMemoryPressureLevel() >= MemoryPressureLevel::Moderate;
+}
+
+inline bool MemoryPressureCritical() {
     return GetMemoryPressureLevel() >= MemoryPressureLevel::Low;
 }
 

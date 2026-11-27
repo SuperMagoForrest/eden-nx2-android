@@ -86,7 +86,8 @@ class YuzuApplication : Application() {
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
         // Map Android trim levels to SX2A pressure tiers (no process kill / no LMKD bypass).
-        // UI_HIDDEN / BACKGROUND alone stay at 0 so load-time buffer GC does not thrash.
+        // UI_HIDDEN alone stays at 0. RUNNING_MODERATE maps to Moderate so load-time LMKD
+        // pressure can trigger progressive buffer GC without waiting for CRITICAL.
         val pressure = when {
             level >= ComponentCallbacks2.TRIM_MEMORY_COMPLETE ||
                 level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL -> 3

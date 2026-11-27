@@ -57,12 +57,12 @@ function Get-ThermalStatus {
 function Get-SocTempCandidates {
   # Best-effort without root: thermal zone type+temp when readable.
   $zones = @()
-  $list = Invoke-AdbTimed @("shell", "toybox", "ls", "/sys/class/thermal") 
+  $list = Invoke-AdbTimed -Args @("shell", "toybox", "ls", "/sys/class/thermal")
   if (-not $list.ok) { return $zones }
   $names = ($list.output -split "\s+") | Where-Object { $_ -like "thermal_zone*" }
   foreach ($z in $names) {
-    $typeOut = Invoke-AdbTimed @("shell", "cat", "/sys/class/thermal/$z/type") -TimeoutSec 5
-    $tempOut = Invoke-AdbTimed @("shell", "cat", "/sys/class/thermal/$z/temp") -TimeoutSec 5
+    $typeOut = Invoke-AdbTimed -Args @("shell", "cat", "/sys/class/thermal/$z/type") -TimeoutSec 5
+    $tempOut = Invoke-AdbTimed -Args @("shell", "cat", "/sys/class/thermal/$z/temp") -TimeoutSec 5
     if (-not $typeOut.ok -or -not $tempOut.ok) { continue }
     $type = ($typeOut.output -replace "`r|`n", "").Trim()
     $raw = ($tempOut.output -replace "`r|`n", "").Trim()
@@ -118,7 +118,7 @@ function Parse-MeminfoApp([string]$mi) {
 }
 
 function Get-MemSnapshot {
-  $res = Invoke-AdbTimed @("shell", "dumpsys", "meminfo", $PKG)
+  $res = Invoke-AdbTimed -Args @("shell", "dumpsys", "meminfo", $PKG)
   if (-not $res.ok) {
     return @{ running = $false; telemetry_lost = $true; timed_out = $res.timed_out }
   }
@@ -126,7 +126,7 @@ function Get-MemSnapshot {
 }
 
 function Get-PackageExitInfo {
-  $res = Invoke-AdbTimed @("shell", "dumpsys", "activity", "exit-info") -TimeoutSec 45
+  $res = Invoke-AdbTimed -Args @("shell", "dumpsys", "activity", "exit-info") -TimeoutSec 45
   if (-not $res.ok) { return $null }
   $lines = $res.output -split "`n"
   $capture = $false
