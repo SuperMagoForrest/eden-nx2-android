@@ -47,6 +47,7 @@ extern "C" {
 #include "common/fs/fs_util.h"
 #include "common/fs/path_util.h"
 #include "common/logging.h"
+#include "common/memory_pressure.h"
 #include "common/scm_rev.h"
 #include "common/scope_exit.h"
 #include "common/settings.h"
@@ -1873,6 +1874,22 @@ JNIEXPORT void JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_updatePowerState(
     g_battery_percentage.store(percentage, std::memory_order_relaxed);
     g_is_charging.store(isCharging, std::memory_order_relaxed);
     g_has_battery.store(hasBattery, std::memory_order_relaxed);
+}
+
+JNIEXPORT void JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_notifyMemoryPressure(
+        JNIEnv*,
+        jobject,
+        jint level) {
+    using Common::MemoryPressureLevel;
+    MemoryPressureLevel mapped = MemoryPressureLevel::None;
+    if (level >= 3) {
+        mapped = MemoryPressureLevel::Critical;
+    } else if (level == 2) {
+        mapped = MemoryPressureLevel::Low;
+    } else if (level == 1) {
+        mapped = MemoryPressureLevel::Moderate;
+    }
+    Common::SetMemoryPressureLevel(mapped);
 }
 
 JNIEXPORT jboolean JNICALL Java_org_yuzu_yuzu_1emu_NativeLibrary_isUpdateCheckerEnabled(

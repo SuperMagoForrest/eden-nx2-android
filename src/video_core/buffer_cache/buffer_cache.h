@@ -13,6 +13,7 @@
 #include <vector>
 #include <fmt/ranges.h>
 
+#include "common/memory_pressure.h"
 #include "common/range_sets.inc"
 #include "video_core/buffer_cache/buffer_cache_base.h"
 #include "video_core/guest_memory.h"
@@ -137,17 +138,20 @@ void BufferCache<P>::TickFrame() {
     if (runtime.CanReportMemoryUsage()) {
         total_used_memory = runtime.GetDeviceMemoryUsage();
     }
+    // SX2A: Android onTrimMemory can request earlier buffer GC without changing guest layout.
+    const bool host_pressure = Common::MemoryPressureElevated();
     if (gpu_memory != nullptr && gpu_memory->UsesNativeTiling()) {
         // Switch 2 titles fill the device with textures (their collector watches the budget);
         // title 1's buffers were ~200 MiB of an 8 GB GPU's ~6.8 GB in use, yet this collector
         // ran aggressively every frame on the device-wide figure, evicting up to 64 buffers (and
         // downloading the GPU-written ones, ~5% of the GPU thread) that were recreated later.
         // Collect when the buffers themselves are large.
-        if (buffer_bytes >= 1_GiB) {
-            RunGarbageCollector(buffer_bytes >= 2_GiB);
+        const u64 pressure_threshold = host_pressure ? 512_MiB : 1_GiB;
+        if (buffer_bytes >= pressure_threshold) {
+            RunGarbageCollector(host_pressure || buffer_bytes >= 2_GiB);
         }
-    } else if (total_used_memory >= minimum_memory) {
-        RunGarbageCollector(total_used_memory >= critical_memory);
+    } else if (host_pressure || total_used_memory >= minimum_memory) {
+        RunGarbageCollector(host_pressure || total_used_memory >= critical_memory);
     }
     ++frame_tick;
     delayed_destruction_ring.Tick();

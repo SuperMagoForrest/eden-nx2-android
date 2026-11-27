@@ -705,6 +705,12 @@ object NativeLibrary {
     external fun updatePowerState(percentage: Int, isCharging: Boolean, hasBattery: Boolean)
 
     /**
+     * SX2A: Android ComponentCallbacks2 trim level → host memory pressure hint.
+     * @param level 0 none, 1 moderate, 2 low, 3 critical
+     */
+    external fun notifyMemoryPressure(level: Int)
+
+    /**
      * Profile manager native calls
      */
     external fun getAllUsers(): Array<String>?

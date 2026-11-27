@@ -9,6 +9,7 @@ package org.yuzu.yuzu_emu
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.ComponentCallbacks2
 import android.content.Context
 import org.yuzu.yuzu_emu.features.input.NativeInput
 import java.io.File
@@ -80,6 +81,28 @@ class YuzuApplication : Application() {
         ControllerNavigationGlobalHook.install(this)
 
         createNotificationChannels()
+    }
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        // Map Android trim levels to SX2A pressure tiers (no process kill / no LMKD bypass).
+        val pressure = when {
+            level >= ComponentCallbacks2.TRIM_MEMORY_COMPLETE ||
+                level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL -> 3
+            level >= ComponentCallbacks2.TRIM_MEMORY_MODERATE ||
+                level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW -> 2
+            level >= ComponentCallbacks2.TRIM_MEMORY_BACKGROUND ||
+                level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE -> 1
+            else -> 0
+        }
+        try {
+            NativeLibrary.notifyMemoryPressure(pressure)
+            if (pressure > 0) {
+                Log.info("[SX2A] onTrimMemory androidLevel=$level pressure=$pressure")
+            }
+        } catch (_: Throwable) {
+            // Native lib may not be ready during very early lifecycle.
+        }
     }
 
     companion object {
