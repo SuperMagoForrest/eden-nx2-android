@@ -588,6 +588,16 @@
     <!-- General settings strings -->
     <string name="frame_limit_enable">Limit speed</string>
     <string name="frame_limit_enable_description">Limits emulation speed to a specified percentage of normal speed.</string>
+    <string name="frame_pacing_mode">Frame pacing</string>
+    <string name="frame_pacing_mode_description">Caps how often frames are presented. 30 FPS is recommended on AYN Thor to reduce heat and power. Emulation speed stays at 100% unless Limit speed is changed. Auto disables the host FPS cap.</string>
+    <string name="frame_pacing_auto">Auto / Unlimited</string>
+    <string name="frame_pacing_30">30 FPS (recommended)</string>
+    <string name="frame_pacing_40">40 FPS</string>
+    <string name="frame_pacing_60">60 FPS</string>
+    <string name="frame_pacing_90">90 FPS</string>
+    <string name="frame_pacing_120">120 FPS</string>
+    <string name="release_host_backing">Release unused host RAM</string>
+    <string name="release_host_backing_description">When the guest frees memory, release corresponding host pages (reduces RSS on Thor). Disable only for memory debugging.</string>
     <string name="frame_limit_slider">Limit speed percent</string>
     <string name="frame_limit_slider_description">Specifies the percentage to limit emulation speed. 100% is the normal speed. Values higher or lower will increase or decrease the speed limit.</string>
     <string name="turbo_speed_limit">Turbo speed</string>

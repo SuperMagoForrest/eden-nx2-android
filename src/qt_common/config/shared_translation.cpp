@@ -404,8 +404,9 @@ std::unique_ptr<ComboboxTranslationMap> ComboboxEnumeration(QObject* parent) {
          }});
     translations->insert({Settings::EnumMetadata<Settings::FramePacingMode>::Index(),
                           {
-                              PAIR(FramePacingMode, Target_Auto, tr("Auto")),
-                              PAIR(FramePacingMode, Target_30, tr("30 FPS")),
+                              PAIR(FramePacingMode, Target_Auto, tr("Auto / Unlimited")),
+                              PAIR(FramePacingMode, Target_30, tr("30 FPS (recommended)")),
+                              PAIR(FramePacingMode, Target_40, tr("40 FPS")),
                               PAIR(FramePacingMode, Target_60, tr("60 FPS")),
                               PAIR(FramePacingMode, Target_90, tr("90 FPS")),
                               PAIR(FramePacingMode, Target_120, tr("120 FPS")),

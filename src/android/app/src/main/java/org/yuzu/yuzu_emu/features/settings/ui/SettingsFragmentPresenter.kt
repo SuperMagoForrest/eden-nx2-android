@@ -498,6 +498,8 @@ class SettingsFragmentPresenter(
         sl.apply {
             add(StringSetting.DEVICE_NAME.key)
             add(BooleanSetting.RENDERER_USE_SPEED_LIMIT.key)
+            add(IntSetting.FRAME_PACING_MODE.key)
+            add(BooleanSetting.RELEASE_HOST_BACKING.key)
             add(ShortSetting.RENDERER_SPEED_LIMIT.key)
             add(ShortSetting.RENDERER_TURBO_SPEED_LIMIT.key)
             add(ShortSetting.RENDERER_SLOW_SPEED_LIMIT.key)

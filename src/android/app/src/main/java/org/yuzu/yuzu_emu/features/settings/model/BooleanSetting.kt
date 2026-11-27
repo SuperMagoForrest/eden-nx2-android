@@ -14,6 +14,7 @@ enum class BooleanSetting(override val key: String) : AbstractBooleanSetting {
     FASTMEM_EXCLUSIVES("cpuopt_fastmem_exclusives"),
     CORE_SYNC_CORE_SPEED("sync_core_speed"),
     RENDERER_USE_SPEED_LIMIT("use_speed_limit"),
+    RELEASE_HOST_BACKING("release_host_backing"),
     USE_CUSTOM_CPU_TICKS("use_custom_cpu_ticks"),
     SKIP_CPU_INNER_INVALIDATION("skip_cpu_inner_invalidation"),
     FIX_BLOOM_EFFECTS("fix_bloom_effects"),

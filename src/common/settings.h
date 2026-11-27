@@ -567,15 +567,33 @@ struct Values {
                                                             "accelerate_astc",
                                                             Category::RendererAdvanced};
 
+    // SX2A: default 30 FPS pacing on Android (Thor thermal/power contract). Desktop keeps Auto.
     SwitchableSetting<FramePacingMode, true> frame_pacing_mode{linkage,
+#ifdef __ANDROID__
+                                                               FramePacingMode::Target_30,
+#else
                                                                FramePacingMode::Target_Auto,
+#endif
                                                                FramePacingMode::Target_Auto,
-                                                               FramePacingMode::Target_120,
+                                                               FramePacingMode::Target_40,
                                                                "frame_pacing_mode",
                                                                Category::RendererAdvanced,
                                                                Specialization::Default,
                                                                true,
                                                                true};
+
+    // When true, freed guest DRAM granules release host backing (memfd punch / MADV_DONTNEED).
+    SwitchableSetting<bool> release_host_backing{linkage,
+#ifdef __ANDROID__
+                                                 true,
+#else
+                                                 false,
+#endif
+                                                 "release_host_backing",
+                                                 Category::Core,
+                                                 Specialization::Default,
+                                                 true,
+                                                 true};
 
     SwitchableSetting<AstcRecompression, true> astc_recompression{linkage,
                                                                   AstcRecompression::Uncompressed,
@@ -1004,6 +1022,9 @@ float Volume();
 
 // speed limit ops
 u16 SpeedLimit();
+
+/// Present FPS cap for FramePacingMode. Returns 0 for Auto (no host cap).
+[[nodiscard]] double FramePacingTargetFps();
 void SetSpeedMode(const SpeedMode &mode);
 void ToggleStandardMode();
 void ToggleTurboMode();

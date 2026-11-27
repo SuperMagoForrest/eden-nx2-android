@@ -182,6 +182,22 @@ abstract class SettingsItem(
             )
             put(
                 SingleChoiceSetting(
+                    IntSetting.FRAME_PACING_MODE,
+                    titleId = R.string.frame_pacing_mode,
+                    descriptionId = R.string.frame_pacing_mode_description,
+                    choicesId = R.array.framePacingModeNames,
+                    valuesId = R.array.framePacingModeValues
+                )
+            )
+            put(
+                SwitchSetting(
+                    BooleanSetting.RELEASE_HOST_BACKING,
+                    titleId = R.string.release_host_backing,
+                    descriptionId = R.string.release_host_backing_description
+                )
+            )
+            put(
+                SingleChoiceSetting(
                     IntSetting.RENDERER_DYNA_STATE,
                     titleId = R.string.dyna_state,
                     descriptionId = R.string.dyna_state_description,
