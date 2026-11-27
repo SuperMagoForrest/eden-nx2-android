@@ -375,13 +375,14 @@ size_t GetTotalPipelineWorkers() {
     const size_t max_core_threads =
         std::max<size_t>(static_cast<size_t>(std::thread::hardware_concurrency()), 2ULL) - 1ULL;
 #ifdef __ANDROID__
+    // SX2A: allow 1 worker so ThermalController / Thor Base can cut compile heat.
+    // Previous clamp floor of 2 made thermal throttling to 1 a no-op.
     const int configured = AndroidSettings::values.pipeline_worker_count.GetValue();
-    const int clamped = std::clamp(configured, 2, 8);
-    const size_t desired = static_cast<size_t>(clamped);
-    if (desired == 0) {
+    if (configured <= 0) {
         return 1ULL;
     }
-    return std::min(max_core_threads, desired);
+    const int clamped = std::clamp(configured, 1, 8);
+    return std::min(max_core_threads, static_cast<size_t>(clamped));
 #else
     return max_core_threads;
 #endif

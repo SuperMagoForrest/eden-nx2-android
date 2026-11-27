@@ -11,6 +11,9 @@ import org.yuzu.yuzu_emu.features.settings.model.IntSetting
 /**
  * Progressive thermal adaptation for Thor lab policy.
  * Adjusts reconstructible knobs only (pipeline workers). Does not change emulation speed %.
+ *
+ * Note: pipeline_worker_count is read when the Vulkan pipeline cache is created (game start).
+ * Mid-session changes apply on the next emulation launch; frame pacing remains the live throttle.
  */
 object ThermalController {
     enum class State {
