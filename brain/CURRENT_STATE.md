@@ -1,31 +1,29 @@
 # Current state
 
-**Aggiornato:** 2026-11-27 — Alpha 0.2 recovery in corso
+**Aggiornato:** 2026-11-27 — Alpha 0.2 candidate installata
 
 ## Git
 
-- Branch: `sx2a/dev`
-- HEAD all’inizio sessione: `d14fcd4ba6` (Alpha 0.1c)
+- Branch: `sx2a/dev` @ `32ace64f03` (+ fix diagnostics PID)
 - Baseline protetta: `59bb148`
-- Working tree: fix reclaim/pacing/pressure/diagnostics (non ancora commit)
-
-## Causa regressione 0.1c (dimostrata)
-
-- **LMKD LOW_MEMORY** su Pokopia load (ApplicationExitInfo pid 18650/19764)
-- Reclaim unsafe (prima del Free) + dirty tracking errato
-- Doppio pacing NX2+Vulkan
-- GC su trim moderato
-
-Vedi `ROOT_CAUSE_ANALYSIS.md`.
+- Fix reclaim/pacing: `efd4e3447a`
 
 ## Device
 
-- Thor Pro ONLINE (`905d41b5`)
-- Package: `dev.eden.nx2.relWithDebInfo` ancora su Alpha 0.1c finché non si installa 0.2
+- Thor Pro ONLINE; **Alpha 0.2** installata, SHA match
+- versionName: `nx2-android-v0.3.3-16-relWithDebInfo` (34417628)
+- Smoke MainActivity: OK (~131 MB PSS)
 
-## Prossimo passo
+## Causa 0.1c (chiusa)
 
-1. Completare fix + build RelWithDebInfo  
-2. Installare candidate Alpha 0.2  
-3. Validare Pokopia boot senza LOW_MEMORY  
-4. Misura pacing/thermal/memoria
+LMKD `LOW_MEMORY` durante loading Pokopia — vedi `ROOT_CAUSE_ANALYSIS.md`.
+
+## Blocco attuale
+
+Validazione gameplay Pokopia su Alpha 0.2: avviare il titolo (owner) con USB collegato.  
+Monitor diagnostico 15 min avviabile con `thor_diagnostics.ps1`.
+
+## APK
+
+`F:\DEV\EDEN_SX2A\releases\eden-sx2a-thor-opt-alpha02-relWithDebInfo.apk`  
+SHA256 `DDD9C30C577C475F1D3FA8BF74F612CD44642D3E868B73F0DEE2C6631D78E48D`

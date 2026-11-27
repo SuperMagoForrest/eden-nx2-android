@@ -90,8 +90,8 @@ function Parse-MeminfoApp([string]$mi) {
   if ([string]::IsNullOrWhiteSpace($mi) -or $mi -match "No process found") {
     return @{ running = $false }
   }
-  $pid = $null
-  if ($mi -match "\*\* MEMINFO in pid (\d+)") { $pid = [int]$Matches[1] }
+  $procPid = $null
+  if ($mi -match "\*\* MEMINFO in pid (\d+)") { $procPid = [int]$Matches[1] }
   $activities = $null
   if ($mi -match "Activities:\s+(\d+)") { $activities = [int]$Matches[1] }
   $pss = $null; $rss = $null; $swap = $null
@@ -106,7 +106,7 @@ function Parse-MeminfoApp([string]$mi) {
   if ($hostAvail -and ($hostAvail.ToString() -match "(\d+)")) { $availKb = [int64]$Matches[1] }
   return @{
     running = $true
-    pid = $pid
+    pid = $procPid
     activities = $activities
     emulation_likely = ($activities -ge 2)
     total_pss_kb = $pss
