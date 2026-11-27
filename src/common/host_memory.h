@@ -66,10 +66,20 @@ public:
     /// A new kernel on this memory: everything a previous one used may hold data.
     void ForgetContents();
 
+    /// Outcome of a host backing release attempt. Dirty/used granule flags may be cleared only
+    /// when the result is ZeroGuaranteed; otherwise the next ClearBackingRegion must zero.
+    enum class BackingReleaseResult : u8 {
+        ZeroGuaranteed = 0, ///< Backing discarded and subsequent reads are zero
+        RssHintOnly = 1,    ///< RSS may drop but contents are not guaranteed zero
+        Failed = 2,         ///< Release attempted and failed
+        Unsupported = 3,    ///< Platform cannot release
+        NotEligible = 4,    ///< Region too small / unaligned / empty
+    };
+
     /// Releases host physical backing for granules no longer owned by the guest kernel.
-    /// On Linux/Android prefers fallocate(PUNCH_HOLE) on the memfd, else MADV_DONTNEED.
-    /// Fully covered granules are marked unused+clean so a later zero ClearBackingRegion skips them.
-    void ReleaseBackingRegion(size_t physical_offset, size_t length);
+    /// Call only after the last guest reference is gone. Clears clean/unused flags solely when
+    /// ZeroGuaranteed; otherwise marks dirty so ClearBackingRegion cannot skip a real zero fill.
+    BackingReleaseResult ReleaseBackingRegion(size_t physical_offset, size_t length);
 
     [[nodiscard]] u8* BackingBasePointer() noexcept {
         return backing_base;

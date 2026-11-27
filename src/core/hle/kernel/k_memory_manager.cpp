@@ -260,9 +260,8 @@ void KMemoryManager::MarkDirty(KPhysicalAddress address, size_t num_pages) {
                                              num_pages * PageSize);
 }
 
-void KMemoryManager::OnPagesClosed(KPhysicalAddress address, size_t num_pages) {
-    // SX2A: release_host_backing drops memfd/anonymous RSS for fully freed granules so Thor
-    // does not keep pages resident until the next ClearBackingRegion touch.
+void KMemoryManager::OnPagesFreed(KPhysicalAddress address, size_t num_pages) {
+    // Invoked only when page refcounts hit zero. Experimental reclaim must not run earlier.
     if (Settings::values.release_host_backing.GetValue()) {
         m_system.DeviceMemory().buffer.ReleaseBackingRegion(
             GetInteger(address) - Core::DramMemoryMap::Base, num_pages * PageSize);

@@ -1,22 +1,28 @@
-# Thermal policy — laboratorio Thor
+# Thermal policy 2.0 (laboratorio)
 
-## Fonti affidabili (no root)
+## Sensori
 
-| Fonte | Stato su Thor Pro | Uso |
-|---|---|---|
-| `dumpsys battery` temperature (/10 °C) | VERIFIED | Watchdog abort ≥ 70 °C |
-| `dumpsys thermalservice` Thermal Status | VERIFIED (status code) | Abort se ≥ 3 (SEVERE) |
-| HAL temperatures list | Spesso `HAL Ready: false` | Non affidabile |
-| Overlay temp Thor | OWNER_REPORTED | Confrontare, non unica verità |
+| Sorgente | Uso |
+|---|---|
+| AYN dashboard (foto owner) | Confronto qualitativo owner |
+| `/sys/class/thermal/thermal_zone*` | Best-effort SoC-comparable senza root |
+| `dumpsys battery` temperature | **Non** usare come soglia operativa SoC |
+| `dumpsys thermalservice` Thermal Status | Abort se ≥ SEVERE (3+) |
 
-## Policy test
+## Soglie laboratorio (sensore SoC-comparable)
 
-- Target sostenuto indicato: 60–65 °C (sensore confrontabile).
-- Abort workload test a 70 °C batteria o thermal status severe.
-- Non stress test continui senza watchdog (`thor_diagnostics.ps1 -DurationSec …`).
+| Fascia | Azione |
+|---|---|
+| 50–55 °C | Target desiderato gameplay |
+| >55 °C | Osserva trend |
+| ~60 °C | Riduci lavoro non essenziale (workers / job non urgenti) |
+| ~65 °C | Modalità conservativa |
+| ≥70 °C SoC | Abort benchmark/watchdog |
+| Thermal Status SEVERE+ | Abort workload |
 
-## Azioni software (progressive)
+Non sono specifiche ufficiali AYN.
 
-NORMAL → WARM → PRESSURE → THERMAL_CONSTRAINED → RECOVERY
+## Limiti noti Alpha 0.1c
 
-Azioni candidate: limitare pipeline workers, rafforzare frame pacing, ridurre lavoro background, budget cache. Mai ridurre silenziosamente emulation speed %; mai root/sysfs.
+`android_pipeline_workers` letto a creazione pipeline cache → cambio live inefficace.  
+Alpha 0.2: documentato; dynamic work budget da estendere dopo boot recovery.

@@ -240,13 +240,17 @@ public:
         UNREACHABLE();
     }
 
-    /// Best-effort discard of committed pages (Thor path is Android/POSIX).
-    void ReleaseBacking(size_t offset, size_t length) {
+    /// Best-effort discard of committed pages. MEM_RESET does not guarantee zero content.
+    HostMemory::BackingReleaseResult ReleaseBacking(size_t offset, size_t length) {
         if (!backing_base || length == 0) {
-            return;
+            return HostMemory::BackingReleaseResult::NotEligible;
         }
         // MEM_RESET hints the pages can be discarded without decommitting the VA.
-        VirtualAlloc(backing_base + offset, length, MEM_RESET, PAGE_READWRITE);
+        // Content after re-touch is undefined unless the caller zeros explicitly.
+        if (!VirtualAlloc(backing_base + offset, length, MEM_RESET, PAGE_READWRITE)) {
+            return HostMemory::BackingReleaseResult::Failed;
+        }
+        return HostMemory::BackingReleaseResult::RssHintOnly;
     }
 
     const size_t backing_size; ///< Size of the backing memory in bytes
@@ -665,33 +669,41 @@ public:
     }
 
     /// Drop host pages for [offset, offset+length) in the backing mapping.
-    /// Prefer memfd hole-punch; fall back to MADV_DONTNEED. Length must be page-aligned.
-    void ReleaseBacking(size_t offset, size_t length) {
+    /// Prefer memfd hole-punch (zero-guaranteed). MADV_DONTNEED on a shared memfd mapping is
+    /// only an RSS hint: subsequent faults reload prior file contents.
+    HostMemory::BackingReleaseResult ReleaseBacking(size_t offset, size_t length) {
         if (length == 0 || backing_base == MAP_FAILED) {
-            return;
+            return HostMemory::BackingReleaseResult::NotEligible;
         }
         if (offset >= backing_size) {
-            return;
+            return HostMemory::BackingReleaseResult::NotEligible;
         }
         length = std::min(length, backing_size - offset);
 #if defined(__linux__)
-        bool punched = false;
         if (fd >= 0) {
 #ifdef FALLOC_FL_PUNCH_HOLE
-            // Keep file size; free physical pages for untouched granules after free.
+            // Keep file size; free physical pages. Punched holes read as zero for MAP_SHARED.
             if (fallocate(fd, FALLOC_FL_PUNCH_HOLE | FALLOC_FL_KEEP_SIZE,
                           static_cast<off_t>(offset), static_cast<off_t>(length)) == 0) {
-                punched = true;
+                // Drop any still-resident pages for the local mapping.
+                madvise(backing_base + offset, length, MADV_DONTNEED);
+                return HostMemory::BackingReleaseResult::ZeroGuaranteed;
             }
 #endif
-        }
-        if (!punched) {
-            // Shared memfd mappings: DONTNEED may refill from the file. Still useful for
-            // anonymous fallback and as a secondary hint after punch.
+            // Shared memfd without a successful punch: DONTNEED does not zero the file.
             madvise(backing_base + offset, length, MADV_DONTNEED);
+            return HostMemory::BackingReleaseResult::RssHintOnly;
         }
+        // Anonymous private mapping: DONTNEED zeros on next fault.
+        if (madvise(backing_base + offset, length, MADV_DONTNEED) == 0) {
+            return HostMemory::BackingReleaseResult::ZeroGuaranteed;
+        }
+        return HostMemory::BackingReleaseResult::Failed;
 #else
-        madvise(backing_base + offset, length, MADV_DONTNEED);
+        if (madvise(backing_base + offset, length, MADV_DONTNEED) == 0) {
+            return HostMemory::BackingReleaseResult::ZeroGuaranteed;
+        }
+        return HostMemory::BackingReleaseResult::Failed;
 #endif
     }
 
@@ -895,9 +907,10 @@ void HostMemory::ForgetContents() {
     }
 }
 
-void HostMemory::ReleaseBackingRegion(size_t physical_offset, size_t length) {
+HostMemory::BackingReleaseResult HostMemory::ReleaseBackingRegion(size_t physical_offset,
+                                                                  size_t length) {
     if (length == 0 || !backing_base) {
-        return;
+        return BackingReleaseResult::NotEligible;
     }
     const size_t end = physical_offset + length;
     // Only release fully covered granules so partial frees cannot discard live neighbor data.
@@ -906,7 +919,7 @@ void HostMemory::ReleaseBackingRegion(size_t physical_offset, size_t length) {
     if (release_begin >= release_end) {
         // Partial granule: keep resident, but mark dirty so the next clear zeros remaining data.
         MarkDirty(physical_offset, length);
-        return;
+        return BackingReleaseResult::NotEligible;
     }
     if (physical_offset < release_begin) {
         MarkDirty(physical_offset, release_begin - physical_offset);
@@ -914,21 +927,37 @@ void HostMemory::ReleaseBackingRegion(size_t physical_offset, size_t length) {
     if (release_end < end) {
         MarkDirty(release_end, end - release_end);
     }
+
+    BackingReleaseResult result = BackingReleaseResult::Unsupported;
 #if !(defined(__OPENORBIS__) || defined(__managarm__))
     if (impl) {
-        impl->ReleaseBacking(release_begin, release_end - release_begin);
+        result = impl->ReleaseBacking(release_begin, release_end - release_begin);
     } else
 #endif
     {
 #if !defined(_WIN32)
-        madvise(backing_base + release_begin, release_end - release_begin, MADV_DONTNEED);
+        // Fallback anonymous path without Impl: DONTNEED zeros on next fault.
+        if (madvise(backing_base + release_begin, release_end - release_begin, MADV_DONTNEED) == 0) {
+            result = BackingReleaseResult::ZeroGuaranteed;
+        } else {
+            result = BackingReleaseResult::Failed;
+        }
+#else
+        result = BackingReleaseResult::Unsupported;
 #endif
     }
-    for (size_t index = release_begin >> GranuleShift; index < (release_end >> GranuleShift);
-         ++index) {
-        // Punched/DONTNEED pages read as zero: clear used+dirty so zero fills skip recommit.
-        granules[index].store(0, std::memory_order_release);
+
+    if (result == BackingReleaseResult::ZeroGuaranteed) {
+        for (size_t index = release_begin >> GranuleShift; index < (release_end >> GranuleShift);
+             ++index) {
+            // Safe to skip the next zero ClearBackingRegion: pages read as zero.
+            granules[index].store(0, std::memory_order_release);
+        }
+    } else {
+        // Preserve legacy correctness: contents may be non-zero; next clear must memset.
+        MarkDirty(release_begin, release_end - release_begin);
     }
+    return result;
 }
 
 void HostMemory::EnableDirectMappedAddress() {

@@ -219,15 +219,58 @@ TEST_CASE("HostMemory: ReleaseBackingRegion clears full granules", "[common]") {
     std::memset(mem.BackingBasePointer() + offset, 0xAB, length);
     mem.MarkUsed(offset, length);
     mem.MarkDirty(offset, length);
-    mem.ReleaseBackingRegion(offset, length);
+    const auto result = mem.ReleaseBackingRegion(offset, length);
 #if !defined(_WIN32)
-    // After punch/DONTNEED, pages should read as zero on Linux/Android.
-    REQUIRE(mem.BackingBasePointer()[offset] == 0);
-    REQUIRE(mem.BackingBasePointer()[offset + length - 1] == 0);
-#endif
-    // Zero clear must not recommit if granules were marked clean unused.
+    if (result == HostMemory::BackingReleaseResult::ZeroGuaranteed) {
+        REQUIRE(mem.BackingBasePointer()[offset] == 0);
+        REQUIRE(mem.BackingBasePointer()[offset + length - 1] == 0);
+        // Zero clear must not recommit if granules were marked clean unused.
+        mem.ClearBackingRegion(offset, length, 0);
+        REQUIRE(mem.BackingBasePointer()[offset] == 0);
+    } else {
+        // Non-guaranteed paths must still leave memory correct after an explicit clear.
+        mem.ClearBackingRegion(offset, length, 0);
+        REQUIRE(mem.BackingBasePointer()[offset] == 0);
+        REQUIRE(mem.BackingBasePointer()[offset + length - 1] == 0);
+    }
+#else
+    // Windows MEM_RESET is RssHintOnly: ClearBackingRegion must zero.
+    REQUIRE(result != HostMemory::BackingReleaseResult::ZeroGuaranteed);
     mem.ClearBackingRegion(offset, length, 0);
-#if !defined(_WIN32)
     REQUIRE(mem.BackingBasePointer()[offset] == 0);
 #endif
+}
+
+TEST_CASE("HostMemory: ReleaseBackingRegion partial granule stays dirty", "[common]") {
+    HostMemory mem(1_MiB, 2_MiB);
+    REQUIRE(mem.BackingBasePointer() != nullptr);
+    constexpr size_t offset = 64_KiB + 4_KiB;
+    constexpr size_t length = 8_KiB;
+    std::memset(mem.BackingBasePointer() + offset, 0xCD, length);
+    mem.MarkUsed(offset, length);
+    mem.MarkDirty(offset, length);
+    const auto result = mem.ReleaseBackingRegion(offset, length);
+    REQUIRE(result == HostMemory::BackingReleaseResult::NotEligible);
+    // Partial release must not pretend the granule is clean.
+    mem.ClearBackingRegion(offset, length, 0);
+    REQUIRE(mem.BackingBasePointer()[offset] == 0);
+}
+
+TEST_CASE("HostMemory: reallocate after release reads zeros", "[common]") {
+    HostMemory mem(1_MiB, 2_MiB);
+    REQUIRE(mem.BackingBasePointer() != nullptr);
+    constexpr size_t offset = 128_KiB;
+    constexpr size_t length = 64_KiB;
+    std::memset(mem.BackingBasePointer() + offset, 0xEF, length);
+    mem.MarkUsed(offset, length);
+    mem.MarkDirty(offset, length);
+    mem.ReleaseBackingRegion(offset, length);
+    mem.ClearBackingRegion(offset, length, 0);
+    for (size_t i = 0; i < length; i += 4_KiB) {
+        REQUIRE(mem.BackingBasePointer()[offset + i] == 0);
+    }
+    std::memset(mem.BackingBasePointer() + offset, 0x11, length);
+    mem.MarkDirty(offset, length);
+    mem.ClearBackingRegion(offset, length, 0);
+    REQUIRE(mem.BackingBasePointer()[offset] == 0);
 }

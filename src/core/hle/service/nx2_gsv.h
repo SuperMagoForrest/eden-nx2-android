@@ -1589,10 +1589,9 @@ private:
     // sends 0x1003c during its boot logos and 0x2003c (two vblanks per frame, 30 fps) after; paced
     // at every vblank it ran at double speed. EDEN_NX2_SWAP_INTERVAL=<n> forces the interval.
     void PaceToVblank(u32 timing) {
-        // Guest present pacing. SpeedLimit()==0 means unlocked emulation speed (skip waits).
-        // Frame pacing FPS caps still apply when SpeedLimit is non-zero so Thor defaults (30)
-        // reduce present rate before CPU/GPU race ahead of the display.
-        if (Settings::SpeedLimit() == 0) {
+        // Guest swap-interval authority only. Host FPS cap lives in vk_swapchain (single pacing
+        // authority) — Alpha 0.1c applied both and stacked waits during load.
+        if (!Settings::values.use_speed_limit.GetValue() || Settings::SpeedLimit() == 0) {
             return;
         }
         static const u32 forced_interval = [] {
@@ -1606,21 +1605,8 @@ private:
             LOG_INFO(Service, "nx2:vi2 present #{} swap interval {} at {} Hz (word 12 = {:#x})",
                      m_presents, swap_interval, refresh_rate, timing);
         }
-        const auto speed = Settings::SpeedLimit();
-        auto interval = std::chrono::nanoseconds{
-            100'000'000'000LL * swap_interval / refresh_rate / speed};
-        // SX2A: optional host FPS cap (default 30 on Android). Takes the slower of guest swap
-        // timing and the configured cap so we never present faster than either allows.
-        if (const double cap_fps = Settings::FramePacingTargetFps(); cap_fps > 0.0) {
-            const auto cap_interval = std::chrono::nanoseconds{
-                static_cast<long long>(100'000'000'000.0 / (cap_fps * static_cast<double>(speed)))};
-            if (cap_interval > interval) {
-                interval = cap_interval;
-            }
-        } else if (!Settings::values.use_speed_limit.GetValue()) {
-            // Auto + speed limit off: do not inject host waits (legacy unlocked behavior).
-            return;
-        }
+        const auto interval = std::chrono::nanoseconds{
+            100'000'000'000LL * swap_interval / refresh_rate / Settings::SpeedLimit()};
         const auto now = std::chrono::steady_clock::now();
         if (now > m_next_vblank + interval) {
             // Running slower than the swap interval: show at once and don't bank the lost time.

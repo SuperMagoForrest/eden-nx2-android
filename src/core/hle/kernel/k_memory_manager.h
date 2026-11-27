@@ -8,6 +8,8 @@
 
 #include <array>
 #include <tuple>
+#include <utility>
+#include <vector>
 
 #include "common/common_funcs.h"
 #include "core/hle/kernel/k_light_lock.h"
@@ -100,21 +102,23 @@ public:
     }
 
     void Close(KPhysicalAddress address, size_t num_pages) {
-        // Hand pages back to the host allocator (and optionally drop RSS).
-        this->OnPagesClosed(address, num_pages);
-
-        // Repeatedly close references until we've done so for all pages.
+        // Reclaim/MarkDirty only for spans whose refcount hits zero (see Impl::Close).
+        // Releasing backing before the last reference is a correctness bug (Alpha 0.1c).
+        std::vector<std::pair<KPhysicalAddress, size_t>> freed;
         while (num_pages) {
             auto& manager = this->GetManager(address);
             const size_t cur_pages = (std::min)(num_pages, manager.GetPageOffsetToEnd(address));
 
             {
                 KScopedLightLock lk(m_pool_locks[static_cast<size_t>(manager.GetPool())]);
-                manager.Close(address, cur_pages);
+                manager.Close(address, cur_pages, &freed);
             }
 
             num_pages -= cur_pages;
             address += cur_pages * PageSize;
+        }
+        for (const auto& [freed_addr, freed_pages] : freed) {
+            this->OnPagesFreed(freed_addr, freed_pages);
         }
     }
 
@@ -291,12 +295,20 @@ private:
             }
         }
 
-        void Close(KPhysicalAddress address, size_t num_pages) {
+        void Close(KPhysicalAddress address, size_t num_pages,
+                   std::vector<std::pair<KPhysicalAddress, size_t>>* freed_out = nullptr) {
             size_t index = this->GetPageOffset(address);
             const size_t end = index + num_pages;
 
             size_t free_start = 0;
             size_t free_count = 0;
+            const auto commit_free = [&](size_t start, size_t count) {
+                const KPhysicalAddress freed_addr = m_heap.GetAddress() + start * PageSize;
+                this->Free(freed_addr, count);
+                if (freed_out) {
+                    freed_out->emplace_back(freed_addr, count);
+                }
+            };
             while (index < end) {
                 ASSERT(m_page_reference_counts[index] > 0);
                 const RefCount ref_count = (--m_page_reference_counts[index]);
@@ -311,7 +323,7 @@ private:
                     }
                 } else {
                     if (free_count > 0) {
-                        this->Free(m_heap.GetAddress() + free_start * PageSize, free_count);
+                        commit_free(free_start, free_count);
                         free_count = 0;
                     }
                 }
@@ -320,7 +332,7 @@ private:
             }
 
             if (free_count > 0) {
-                this->Free(m_heap.GetAddress() + free_start * PageSize, free_count);
+                commit_free(free_start, free_count);
             }
         }
 
@@ -338,7 +350,7 @@ private:
 private:
     void MarkUsed(KPhysicalAddress address, size_t num_pages);
     void MarkDirty(KPhysicalAddress address, size_t num_pages);
-    void OnPagesClosed(KPhysicalAddress address, size_t num_pages);
+    void OnPagesFreed(KPhysicalAddress address, size_t num_pages);
 
     Impl& GetManager(KPhysicalAddress address) {
         return m_managers[m_memory_layout.GetPhysicalLinearRegion(address).GetAttributes()];

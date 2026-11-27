@@ -15,7 +15,8 @@ import org.yuzu.yuzu_emu.features.settings.model.IntSetting
  * Does not rewrite user-changed settings after the first apply.
  */
 object ThorHardwareProfile {
-    private const val PREF_APPLIED = "sx2a_thor_profile_applied_v1"
+    // v2: reclaim only after Free + single pacing authority (Alpha 0.2).
+    private const val PREF_APPLIED = "sx2a_thor_profile_applied_v2"
 
     enum class DeviceClass {
         THOR_PRO,

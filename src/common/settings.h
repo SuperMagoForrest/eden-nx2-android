@@ -575,6 +575,7 @@ struct Values {
                                                                FramePacingMode::Target_Auto,
 #endif
                                                                FramePacingMode::Target_Auto,
+                                                               // Target_40 is last enumerator (ordinal 5); clamps 0..5.
                                                                FramePacingMode::Target_40,
                                                                "frame_pacing_mode",
                                                                Category::RendererAdvanced,
@@ -582,7 +583,8 @@ struct Values {
                                                                true,
                                                                true};
 
-    // When true, freed guest DRAM granules release host backing (memfd punch / MADV_DONTNEED).
+    // When true, pages freed at refcount 0 may release host backing (memfd punch).
+    // Default on for Android Thor; reclaim is gated on ZeroGuaranteed dirty tracking.
     SwitchableSetting<bool> release_host_backing{linkage,
 #ifdef __ANDROID__
                                                  true,
