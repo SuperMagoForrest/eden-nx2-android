@@ -1,34 +1,27 @@
 # Current state
 
-**Aggiornato:** 2026-11-27 sessione M2–M9 implementativa (in corso)
+**Aggiornato:** 2026-11-27 — Alpha 0.1c installata
 
 ## Git
 
-- Branch: `sx2a/dev`
-- Baseline emu protetta: `59bb148`
-- Working tree: modifiche frame pacing + memory reclaim + Android Thor profile/thermal (pre-commit fino a build OK)
+- Branch: `sx2a/dev` @ `c64b94c46a` (pushed origin)
+- Baseline protetta: `59bb148`
 
 ## Device
 
-- Thor Pro ADB: **ONLINE** (AYN Thor / kalama / Android 13 SDK 33)
-- APK installato = baseline SHA256 **match** `33E5B875…7BE08325`
-- Pokopia: **OWNER_REPORTED_IN_GAME** (lag/stutter/heat; non strumentato)
+- Thor Pro ONLINE; candidate **0.1c** SHA match
+- Smoke MainActivity: OK (~85 MB PSS idle)
+- Pokopia candidate: **NEEDS_OWNER** per run strumentata
 
-## Completato questa sessione
+## Delivered questa sessione
 
-- Diagnostica `thor_diagnostics.ps1` + snapshot `logs/diag-*`
-- Frame pacing Android ripristinato; default 30 FPS; PaceToVblank rispetta cap
-- `ReleaseBackingRegion` + `release_host_backing` su Close
-- Profili Thor + ThermalController (workers)
-- Storage build → `F:\DEV\EDEN_SX2A\cache\gradle|cpm|tmp`
+- M2 diagnostica + watchdog script
+- M3 frame pacing 30 FPS reale (fix bypass Android)
+- M4 reclaim backing + onTrimMemory → buffer GC
+- M5 worker clamp ≥1 per thermal
+- M8/M9 profili Thor + ThermalController
+- APK Alpha 0.1c in `releases/`
 
-## In corso
+## Blocco attuale
 
-- Build candidate RelWithDebInfo (`logs/build-20261127-112435.log`)
-
-## Prossimo
-
-1. Completare build, archiviare APK in `releases/` con SHA256
-2. Install diagnostico + campione meminfo a caldo (watchdog 70 °C)
-3. Shader stutter (async/cache) dopo explore
-4. Commit atomici + push origin
+Misura G4–G6 richiede gameplay Pokopia sulla candidate (senza clear dati). Con titolo in esecuzione e USB collegato, riprendere con `thor_diagnostics.ps1 -DurationSec 300`.
